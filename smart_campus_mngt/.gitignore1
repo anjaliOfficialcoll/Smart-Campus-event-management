@@ -1,0 +1,14 @@
+# Maven
+target/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Logs
+*.log
+
+# 🔐 Sensitive files
+src/main/resources/application.properties
+.env
