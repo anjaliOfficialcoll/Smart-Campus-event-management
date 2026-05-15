@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Events | Admin</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo"><span>🎓</span><span>CampusEvents</span></div>
+    <nav class="sidebar-nav">
+      <a th:href="@{/admin/dashboard}"     class="sidebar-link"><span class="link-icon">📊</span> Dashboard</a>
+      <a th:href="@{/admin/events}"        class="sidebar-link active"><span class="link-icon">📅</span> Manage Events</a>
+      <a th:href="@{/admin/events/new}"    class="sidebar-link"><span class="link-icon">➕</span> Add Event</a>
+      <a th:href="@{/admin/registrations}" class="sidebar-link"><span class="link-icon">👥</span> All Registrations</a>
+      <a th:href="@{/admin/statistics}"    class="sidebar-link"><span class="link-icon">📈</span> Statistics</a>
+      <a th:href="@{/}"                    class="sidebar-link"><span class="link-icon">🏠</span> Student Portal</a>
+    </nav>
+    <div class="sidebar-footer">
+      <form th:action="@{/admin/logout}" method="post">
+        <button type="submit" class="sidebar-logout">🚪 Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <h1 class="admin-page-title">Manage Events</h1>
+      <a th:href="@{/admin/events/new}" class="btn btn-primary">➕ Add New Event</a>
+    </header>
+
+    <div class="admin-content">
+      <div th:replace="~{fragments/layout :: messages}"></div>
+
+      <!-- Search & Filter -->
+      <div class="filter-card">
+        <h3 class="filter-title">🔍 Search &amp; Filter</h3>
+        <form th:action="@{/admin/events}" method="get" class="filter-form">
+          <div class="filter-row">
+            <div class="form-group">
+              <label class="form-label">Department</label>
+              <select name="department" class="form-input form-select">
+                <option value="">All Departments</option>
+                <option th:each="dept : ${departments}"
+                        th:value="${dept}" th:text="${dept}"
+                        th:selected="${dept == filterDepartment}">Dept</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Event Type</label>
+              <select name="eventType" class="form-input form-select">
+                <option value="">All Types</option>
+                <option value="WORKSHOP"  th:selected="${filterEventType == 'WORKSHOP'}">Workshop</option>
+                <option value="SEMINAR"   th:selected="${filterEventType == 'SEMINAR'}">Seminar</option>
+                <option value="CULTURAL"  th:selected="${filterEventType == 'CULTURAL'}">Cultural</option>
+                <option value="SPORTS"    th:selected="${filterEventType == 'SPORTS'}">Sports</option>
+                <option value="TECHNICAL" th:selected="${filterEventType == 'TECHNICAL'}">Technical</option>
+                <option value="OTHER"     th:selected="${filterEventType == 'OTHER'}">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" name="date" class="form-input"
+                     th:value="${filterDate != null ? filterDate : ''}"/>
+            </div>
+            <div class="filter-actions">
+              <button type="submit" class="btn btn-primary">Apply</button>
+              <a th:href="@{/admin/events}" class="btn btn-ghost">Reset</a>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="results-header">
+        <span th:text="'Showing ' + ${totalItems} + ' event(s)'">Results</span>
+      </div>
+
+      <!-- Events Table -->
+      <div class="admin-card">
+        <div th:if="${#lists.isEmpty(events)}" class="empty-state small">
+          <p>📭 No events found matching your criteria.</p>
+          <a th:href="@{/admin/events}" class="btn btn-outline">Clear Filters</a>
+        </div>
+
+        <table class="admin-table" th:unless="${#lists.isEmpty(events)}">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Event Name</th>
+              <th>Date &amp; Time</th>
+              <th>Department</th>
+              <th>Type</th>
+              <th>Venue</th>
+              <th>Registrations</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="event, iter : ${events}">
+              <td th:text="${iter.index + 1}">1</td>
+              <td>
+                <a th:href="@{/events/{id}(id=${event.id})}"
+                   th:text="${event.name}" target="_blank"
+                   class="table-link">Name</a>
+              </td>
+              <td>
+                <span th:text="${#temporals.format(event.date, 'dd MMM yyyy')}">Date</span><br/>
+                <small th:if="${event.time != null}"
+                       class="text-muted"
+                       th:text="${#temporals.format(event.time, 'hh:mm a')}">Time</small>
+              </td>
+              <td th:text="${event.department}">Dept</td>
+              <td>
+                <span th:text="${event.eventType}"
+                      th:class="'badge badge-sm badge-' + ${#strings.toLowerCase(event.eventType)}">
+                  TYPE
+                </span>
+              </td>
+              <td th:text="${event.venue}">Venue</td>
+              <td>
+                <!-- Clickable registration count → goes to registered students page -->
+                <a th:href="@{/admin/events/{id}/registrations(id=${event.id})}"
+                   class="reg-count-link"
+                   th:text="${event.registrationCount} + ' students'">
+                  0 students
+                </a>
+                <span th:if="${event.capacity != null}"
+                      th:text="' / ' + ${event.capacity}"
+                      class="reg-capacity"> / cap</span>
+              </td>
+              <td>
+                <div class="action-cell-v">
+                  <!-- View registered students -->
+                  <a th:href="@{/admin/events/{id}/registrations(id=${event.id})}"
+                     class="btn btn-teal btn-xs">👥 Students</a>
+                  <!-- Edit -->
+                  <a th:href="@{/admin/events/{id}/edit(id=${event.id})}"
+                     class="btn btn-outline btn-xs">✏️ Edit</a>
+                  <!-- Delete -->
+                  <form th:action="@{/admin/events/{id}/delete(id=${event.id})}"
+                        method="post" style="display:inline"
+                        onsubmit="return confirm('Delete this event? All registrations will be removed.')">
+                    <button type="submit" class="btn btn-danger btn-xs">🗑️</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" th:if="${totalPages > 1}">
+          <a th:if="${currentPage > 0}"
+             th:href="@{/admin/events(page=${currentPage - 1}, department=${filterDepartment}, eventType=${filterEventType}, date=${filterDate})}"
+             class="page-btn">&#8592; Prev</a>
+          <span th:if="${currentPage == 0}" class="page-btn disabled">&#8592; Prev</span>
+
+          <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:if="${i != currentPage}"
+               th:href="@{/admin/events(page=${i})}"
+               th:text="${i + 1}" class="page-btn"></a>
+            <span th:if="${i == currentPage}"
+                  th:text="${i + 1}" class="page-btn active"></span>
+          </span>
+
+          <a th:if="${currentPage < totalPages - 1}"
+             th:href="@{/admin/events(page=${currentPage + 1}, department=${filterDepartment}, eventType=${filterEventType}, date=${filterDate})}"
+             class="page-btn">Next &#8594;</a>
+          <span th:if="${currentPage >= totalPages - 1}" class="page-btn disabled">Next &#8594;</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

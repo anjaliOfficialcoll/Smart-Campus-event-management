@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <title>Registration Confirmed</title>
+
+  <!--
+    Email-safe CSS: all styles are inline or inside <style> in <head>.
+    Most email clients (Gmail, Outlook, Apple Mail) support this approach.
+    We avoid external CSS files as they are blocked by email clients.
+  -->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background-color: #f4f6f9;
+      color: #1a1a2e;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #f4f6f9;
+      padding: 40px 20px;
+    }
+    .email-card {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #0d1b2a 0%, #1b3a5c 100%);
+      padding: 40px 40px 32px;
+      text-align: center;
+      position: relative;
+    }
+    .header-logo {
+      font-size: 28px;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .header-brand {
+      color: #f4a228;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .header-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ffffff;
+      padding: 6px 18px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .header-title {
+      color: #ffffff;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.3;
+    }
+    .header-subtitle {
+      color: rgba(255,255,255,0.65);
+      font-size: 15px;
+      margin-top: 8px;
+    }
+    .header-check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: #f4a228;
+      border-radius: 50%;
+      font-size: 26px;
+      margin: 20px auto 0;
+      display: block;
+      text-align: center;
+      line-height: 56px;
+    }
+
+    /* ── Greeting ── */
+    .greeting {
+      padding: 32px 40px 0;
+    }
+    .greeting h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0d1b2a;
+      margin-bottom: 8px;
+    }
+    .greeting p {
+      color: #4a5568;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ── Event Details Card ── */
+    .event-section {
+      padding: 24px 40px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #718096;
+      margin-bottom: 14px;
+    }
+    .event-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .event-card-header {
+      background: linear-gradient(90deg, #0d1b2a, #1b3a5c);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .event-type-badge {
+      display: inline-block;
+      background: #f4a228;
+      color: #0d1b2a;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .event-card-title {
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .event-details-grid {
+      padding: 20px;
+      display: table;
+      width: 100%;
+    }
+    .detail-row {
+      display: table-row;
+    }
+    .detail-icon {
+      display: table-cell;
+      padding: 7px 12px 7px 0;
+      font-size: 16px;
+      width: 28px;
+      vertical-align: top;
+      color: #4a5568;
+    }
+    .detail-label {
+      display: table-cell;
+      padding: 7px 16px 7px 0;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #718096;
+      white-space: nowrap;
+      vertical-align: top;
+      width: 100px;
+    }
+    .detail-value {
+      display: table-cell;
+      padding: 7px 0;
+      font-size: 14px;
+      color: #1a202c;
+      font-weight: 500;
+      vertical-align: top;
+    }
+
+    /* ── Registration Info ── */
+    .reg-section {
+      padding: 0 40px 24px;
+    }
+    .reg-info-row {
+      background: #fff8f0;
+      border: 1px solid #fdd8a0;
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .reg-info-item {}
+    .reg-info-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #b7791f;
+      margin-bottom: 3px;
+    }
+    .reg-info-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: #744210;
+    }
+
+    /* ── QR Code Section ── */
+    .qr-section {
+      padding: 0 40px 32px;
+      text-align: center;
+    }
+    .qr-card {
+      background: #f8fafc;
+      border: 2px dashed #cbd5e0;
+      border-radius: 16px;
+      padding: 28px 20px;
+      display: inline-block;
+      width: 100%;
+    }
+    .qr-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0d1b2a;
+      margin-bottom: 6px;
+      letter-spacing: -0.2px;
+    }
+    .qr-subtitle {
+      font-size: 12px;
+      color: #718096;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .qr-image {
+      display: block;
+      margin: 0 auto 16px;
+      border: 3px solid #0d1b2a;
+      border-radius: 12px;
+      padding: 8px;
+      background: #ffffff;
+      width: 180px;
+      height: 180px;
+    }
+    .qr-reg-id {
+      font-size: 13px;
+      font-weight: 700;
+      color: #4a5568;
+      background: #edf2f7;
+      padding: 6px 14px;
+      border-radius: 6px;
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.05em;
+    }
+    .qr-note {
+      font-size: 11px;
+      color: #a0aec0;
+      margin-top: 12px;
+    }
+
+    /* ── Steps ── */
+    .steps-section {
+      padding: 0 40px 32px;
+    }
+    .steps-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0d1b2a;
+      margin-bottom: 16px;
+    }
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .step-number {
+      width: 28px;
+      height: 28px;
+      background: #0d1b2a;
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      line-height: 28px;
+      text-align: center;
+    }
+    .step-text {
+      font-size: 13px;
+      color: #4a5568;
+      line-height: 1.6;
+      padding-top: 4px;
+    }
+    .step-text strong { color: #1a202c; }
+
+    /* ── CTA Buttons ── */
+    .cta-section {
+      padding: 0 40px 32px;
+      text-align: center;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: #f4a228;
+      color: #0d1b2a;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 700;
+      margin: 6px 8px;
+      letter-spacing: -0.2px;
+    }
+    .cta-btn-outline {
+      display: inline-block;
+      background: transparent;
+      color: #0d1b2a;
+      border: 2px solid #0d1b2a;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 6px 8px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: #edf2f7;
+      margin: 0 40px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 28px 40px 32px;
+      text-align: center;
+      background: #f8fafc;
+    }
+    .footer-brand {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0d1b2a;
+      margin-bottom: 6px;
+    }
+    .footer-tagline {
+      font-size: 12px;
+      color: #718096;
+      margin-bottom: 16px;
+    }
+    .footer-links {
+      margin-bottom: 16px;
+    }
+    .footer-link {
+      color: #4a90d9;
+      text-decoration: none;
+      font-size: 12px;
+      margin: 0 8px;
+    }
+    .footer-copy {
+      font-size: 11px;
+      color: #a0aec0;
+    }
+    .footer-note {
+      font-size: 11px;
+      color: #a0aec0;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+<div class="email-card">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <span class="header-logo">🎓</span>
+    <span class="header-brand">CampusEvents</span>
+    <div class="header-badge">✅ Registration Confirmed</div>
+    <div class="header-check">🎉</div>
+    <h1 class="header-title" style="margin-top:16px">You're In!</h1>
+    <p class="header-subtitle">Your spot has been reserved successfully.</p>
+  </div>
+
+  <!-- ── GREETING ── -->
+  <div class="greeting">
+    <h2 th:text="'Hi ' + ${studentName} + '!'">Hi Student!</h2>
+    <p>
+      Great news! Your registration for
+      <strong th:text="${eventName}">the event</strong>
+      has been confirmed. We're excited to have you join us.
+      Please find your event details and digital entry pass (QR code) below.
+    </p>
+  </div>
+
+  <!-- ── EVENT DETAILS ── -->
+  <div class="event-section">
+    <div class="section-label">📋 Event Details</div>
+    <div class="event-card">
+      <div class="event-card-header">
+        <span class="event-type-badge" th:text="${eventType}">WORKSHOP</span>
+        <span class="event-card-title" th:text="${eventName}">Event Name</span>
+      </div>
+      <div class="event-details-grid">
+
+        <div class="detail-row">
+          <span class="detail-icon">📅</span>
+          <span class="detail-label">Date</span>
+          <span class="detail-value" th:text="${eventDate}">01 Jan 2025</span>
+        </div>
+
+        <div class="detail-row" th:if="${eventTime != null and !#strings.isEmpty(eventTime)}">
+          <span class="detail-icon">🕐</span>
+          <span class="detail-label">Time</span>
+          <span class="detail-value" th:text="${eventTime}">10:00 AM</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-icon">📍</span>
+          <span class="detail-label">Venue</span>
+          <span class="detail-value" th:text="${eventVenue}">Main Auditorium</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-icon">🏛️</span>
+          <span class="detail-label">Department</span>
+          <span class="detail-value" th:text="${eventDepartment}">Computer Science</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REGISTRATION INFO ── -->
+  <div class="reg-section">
+    <div class="section-label">🎫 Your Registration Info</div>
+    <div class="reg-info-row">
+      <div class="reg-info-item">
+        <div class="reg-info-label">Registration ID</div>
+        <div class="reg-info-value" th:text="'#REG-' + ${registrationId}">REG-001</div>
+      </div>
+      <div class="reg-info-item">
+        <div class="reg-info-label">Student ID</div>
+        <div class="reg-info-value" th:text="${studentId}">CS2021001</div>
+      </div>
+      <div class="reg-info-item">
+        <div class="reg-info-label">Registered On</div>
+        <div class="reg-info-value" th:text="${registeredAt}">01 Jan 2025, 10:00 AM</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── QR CODE ── -->
+  <div class="qr-section">
+    <div class="qr-card">
+      <div class="qr-title">📲 Your Digital Entry Pass</div>
+      <div class="qr-subtitle">
+        Show this QR code at the event entrance for quick check-in.<br/>
+        It encodes your complete registration details.
+      </div>
+
+      <!--
+        The QR code is embedded as a Base64 inline image.
+        "cid:qrcode" is the Content-ID used when sending via MimeMessageHelper.addInline().
+        Email clients (Gmail, Outlook, Apple Mail) all support cid: inline images.
+      -->
+      <img src="cid:qrcode"
+           th:attr="alt='QR Code for Registration #' + ${registrationId}"
+           class="qr-image"
+           width="180"
+           height="180"/>
+
+      <div class="qr-reg-id" th:text="'REG-' + ${registrationId}">REG-001</div>
+      <div class="qr-note">
+        📌 Screenshot or print this email to keep your pass handy on event day.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WHAT TO DO NEXT ── -->
+  <div class="steps-section">
+    <div class="section-label">✅ What to Do Next</div>
+
+    <div class="step-item">
+      <div class="step-number">1</div>
+      <div class="step-text">
+        <strong>Save this email</strong> — it contains your registration ID and QR entry pass.
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">2</div>
+      <div class="step-text">
+        <strong>Arrive 10–15 minutes early</strong> on
+        <strong th:text="${eventDate}">the event date</strong>
+        <span th:if="${eventTime != null and !#strings.isEmpty(eventTime)}">
+          at <strong th:text="${eventTime}">the time</strong>
+        </span>.
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">3</div>
+      <div class="step-text">
+        <strong>Show the QR code</strong> above at the registration desk for instant check-in.
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-number">4</div>
+      <div class="step-text">
+        After the event, <strong>submit your feedback</strong> on our portal to help us improve.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CTA BUTTONS ── -->
+  <div class="cta-section">
+    <a th:href="${eventUrl}" class="cta-btn">View Event Details →</a>
+    <a th:href="${myEventsUrl}" class="cta-btn-outline">My Registrations</a>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer">
+    <div class="footer-brand">🎓 CampusEvents</div>
+    <div class="footer-tagline">Smart Campus Event Management System</div>
+    <div class="footer-links">
+      <a th:href="${baseUrl}" class="footer-link" th:attr="href=${baseUrl}">Home</a>
+      <a class="footer-link" th:href="${myEventsUrl}">My Events</a>
+    </div>
+    <div class="footer-copy">
+      © 2025 CampusEvents — Vel Tech R&amp;D Institute of Science and Technology, Chennai.
+    </div>
+    <div class="footer-note">
+      This email was sent to <strong th:text="${studentEmail}">you</strong>
+      because you registered for an event on our platform.<br/>
+      If this wasn't you, please ignore this email.
+    </div>
+  </div>
+
+</div><!-- end email-card -->
+</div><!-- end wrapper -->
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${pageTitle} + ' | Admin'">Event Form</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo"><span>🎓</span><span>CampusEvents</span></div>
+    <nav class="sidebar-nav">
+      <a th:href="@{/admin/dashboard}" class="sidebar-link"><span class="link-icon">📊</span> Dashboard</a>
+      <a th:href="@{/admin/events}" class="sidebar-link"><span class="link-icon">📅</span> Manage Events</a>
+      <a th:href="@{/admin/events/new}" class="sidebar-link active"><span class="link-icon">➕</span> Add Event</a>
+      <a th:href="@{/admin/statistics}" class="sidebar-link"><span class="link-icon">📈</span> Statistics</a>
+      <a th:href="@{/}" class="sidebar-link"><span class="link-icon">🏠</span> Student Portal</a>
+    </nav>
+    <div class="sidebar-footer">
+      <form th:action="@{/admin/logout}" method="post">
+        <button type="submit" class="sidebar-logout">🚪 Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <h1 class="admin-page-title" th:text="${pageTitle}">Event Form</h1>
+      <a th:href="@{/admin/events}" class="btn btn-ghost">← Back to Events</a>
+    </header>
+
+    <div class="admin-content">
+      <div class="admin-card form-admin-card">
+        <div class="form-card-header">
+          <h2 th:text="${isEditMode} ? '✏️ Edit Event' : '➕ Create New Event'">Form</h2>
+          <p th:text="${isEditMode} ? 'Update the details below and save.' : 'Fill in all required fields to create a new event.'">Desc</p>
+        </div>
+
+        <!--
+          th:action is passed in as a variable from the controller:
+          - Add:  /admin/events/new
+          - Edit: /admin/events/{id}/edit
+        -->
+        <form th:action="@{${formAction}}"
+              th:object="${event}"
+              method="post"
+              class="campus-form admin-event-form">
+
+          <div class="form-section">
+            <h3 class="form-section-title">📋 Basic Information</h3>
+            <div class="form-row">
+              <!-- Event Name -->
+              <div class="form-group form-group-wide" th:classappend="${#fields.hasErrors('name')} ? 'has-error'">
+                <label for="name" class="form-label">Event Name <span class="required">*</span></label>
+                <input type="text" id="name" th:field="*{name}"
+                       class="form-input" placeholder="e.g. AI & Machine Learning Workshop"/>
+                <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Error</span>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('description')} ? 'has-error'">
+              <label for="description" class="form-label">Description <span class="required">*</span></label>
+              <textarea id="description" th:field="*{description}"
+                        class="form-input form-textarea" rows="4"
+                        placeholder="Describe the event — what students will learn, activities, prizes, etc."></textarea>
+              <span class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Error</span>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="form-section-title">📅 Date, Time &amp; Location</h3>
+            <div class="form-row">
+              <!-- Date -->
+              <div class="form-group" th:classappend="${#fields.hasErrors('date')} ? 'has-error'">
+                <label for="date" class="form-label">Event Date <span class="required">*</span></label>
+                <input type="date" id="date" th:field="*{date}" class="form-input"/>
+                <span class="field-error" th:if="${#fields.hasErrors('date')}" th:errors="*{date}">Error</span>
+              </div>
+
+              <!-- Time -->
+              <div class="form-group">
+                <label for="time" class="form-label">Event Time</label>
+                <input type="time" id="time" th:field="*{time}" class="form-input"/>
+              </div>
+
+              <!-- Capacity -->
+              <div class="form-group">
+                <label for="capacity" class="form-label">Max Capacity</label>
+                <input type="number" id="capacity" th:field="*{capacity}"
+                       class="form-input" min="1" placeholder="e.g. 100"/>
+              </div>
+            </div>
+
+            <!-- Venue -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('venue')} ? 'has-error'">
+              <label for="venue" class="form-label">Venue <span class="required">*</span></label>
+              <input type="text" id="venue" th:field="*{venue}"
+                     class="form-input" placeholder="e.g. CS Lab Block A, Room 204"/>
+              <span class="field-error" th:if="${#fields.hasErrors('venue')}" th:errors="*{venue}">Error</span>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="form-section-title">🏷️ Classification</h3>
+            <div class="form-row">
+              <!-- Department -->
+              <div class="form-group" th:classappend="${#fields.hasErrors('department')} ? 'has-error'">
+                <label for="department" class="form-label">Department <span class="required">*</span></label>
+                <select id="department" th:field="*{department}" class="form-input form-select">
+                  <option value="">-- Select Department --</option>
+                  <option value="Computer Science">Computer Science</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Electronics & Communication">Electronics &amp; Communication</option>
+                  <option value="Mechanical Engineering">Mechanical Engineering</option>
+                  <option value="Civil Engineering">Civil Engineering</option>
+                  <option value="Science">Science</option>
+                  <option value="Management">Management</option>
+                  <option value="Psychology">Psychology</option>
+                  <option value="Arts & Humanities">Arts &amp; Humanities</option>
+                  <option value="Sports">Sports</option>
+                  <option value="All Departments">All Departments</option>
+                </select>
+                <span class="field-error" th:if="${#fields.hasErrors('department')}" th:errors="*{department}">Error</span>
+              </div>
+
+              <!-- Event Type -->
+              <div class="form-group" th:classappend="${#fields.hasErrors('eventType')} ? 'has-error'">
+                <label for="eventType" class="form-label">Event Type <span class="required">*</span></label>
+                <select id="eventType" th:field="*{eventType}" class="form-input form-select">
+                  <option value="">-- Select Type --</option>
+                  <option value="WORKSHOP">Workshop</option>
+                  <option value="SEMINAR">Seminar</option>
+                  <option value="CULTURAL">Cultural</option>
+                  <option value="SPORTS">Sports</option>
+                  <option value="TECHNICAL">Technical</option>
+                  <option value="OTHER">Other</option>
+                </select>
+                <span class="field-error" th:if="${#fields.hasErrors('eventType')}" th:errors="*{eventType}">Error</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <span th:text="${isEditMode} ? '💾 Save Changes' : '➕ Create Event'">Submit</span>
+            </button>
+            <a th:href="@{/admin/events}" class="btn btn-ghost">Cancel</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

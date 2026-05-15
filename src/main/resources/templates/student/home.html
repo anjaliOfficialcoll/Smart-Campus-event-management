@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${pageTitle} + ' | CampusEvents'">Home | CampusEvents</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div th:replace="~{fragments/layout :: navbar}"></div>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">🎓 Smart Campus</div>
+      <h1 class="hero-title">Discover &amp;<br/>Join Campus Events</h1>
+      <p class="hero-subtitle">Workshops, seminars, cultural fests, sports tournaments — find what excites you and register in seconds.</p>
+      <a href="#events" class="btn btn-primary btn-lg">Browse Events ↓</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="stat-number" th:text="${totalItems}">0</span>
+        <span class="stat-label">Upcoming Events</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-number">5+</span>
+        <span class="stat-label">Departments</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-number">100+</span>
+        <span class="stat-label">Students</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flash Messages -->
+  <div class="container">
+    <div th:replace="~{fragments/layout :: messages}"></div>
+  </div>
+
+  <!-- Events Section -->
+  <section class="container section" id="events">
+    <div class="section-header">
+      <h2 class="section-title">Upcoming Events</h2>
+      <p class="section-sub" th:text="'Showing ' + ${#lists.size(events)} + ' of ' + ${totalItems} + ' events'"></p>
+    </div>
+
+    <!-- No Events Message -->
+    <div th:if="${#lists.isEmpty(events)}" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h3>No Events Available</h3>
+      <p>There are no upcoming events at the moment. Check back soon!</p>
+    </div>
+
+    <!-- Event Cards Grid -->
+    <div class="events-grid" th:unless="${#lists.isEmpty(events)}">
+      <div class="event-card" th:each="event : ${events}">
+        <!-- Event Type Badge -->
+        <div class="card-header">
+          <span th:text="${event.eventType}"
+                th:class="'badge badge-' + ${#strings.toLowerCase(event.eventType)}"
+                class="badge">TYPE</span>
+          <span class="card-dept" th:text="${event.department}">Dept</span>
+        </div>
+
+        <!-- Event Info -->
+        <div class="card-body">
+          <h3 class="card-title">
+            <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.name}">Event Name</a>
+          </h3>
+          <p class="card-desc" th:text="${#strings.abbreviate(event.description, 120)}">Description...</p>
+
+          <div class="card-meta">
+            <span class="meta-item">
+              📅 <span th:text="${#temporals.format(event.date, 'dd MMM yyyy')}">Date</span>
+            </span>
+            <span class="meta-item" th:if="${event.time != null}">
+              🕐 <span th:text="${#temporals.format(event.time, 'hh:mm a')}">Time</span>
+            </span>
+            <span class="meta-item">
+              📍 <span th:text="${event.venue}">Venue</span>
+            </span>
+            <span class="meta-item">
+              👥 <span th:text="${event.registrationCount} + ' registered'">0 registered</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Card Actions -->
+        <div class="card-footer">
+          <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-outline btn-sm">View Details</a>
+          <a th:href="@{/register/{id}(id=${event.id})}" class="btn btn-primary btn-sm">Register →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" th:if="${totalPages > 1}">
+      <a th:if="${currentPage > 0}"
+         th:href="@{'/'(page=${currentPage - 1})}"
+         class="page-btn">&#8592; Prev</a>
+      <span th:if="${currentPage == 0}" class="page-btn disabled">&#8592; Prev</span>
+
+      <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+        <a th:if="${i != currentPage}"
+           th:href="@{'/'(page=${i})}"
+           th:text="${i + 1}" class="page-btn"></a>
+        <span th:if="${i == currentPage}"
+              th:text="${i + 1}" class="page-btn active"></span>
+      </span>
+
+      <a th:if="${currentPage < totalPages - 1}"
+         th:href="@{'/'(page=${currentPage + 1})}"
+         class="page-btn">Next &#8594;</a>
+      <span th:if="${currentPage >= totalPages - 1}" class="page-btn disabled">Next &#8594;</span>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div th:replace="~{fragments/layout :: footer}"></div>
+
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

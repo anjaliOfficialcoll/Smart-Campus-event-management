@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${pageTitle} + ' | Admin'">Registrations</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo"><span>🎓</span><span>CampusEvents</span></div>
+    <nav class="sidebar-nav">
+      <a th:href="@{/admin/dashboard}"     class="sidebar-link"><span class="link-icon">📊</span> Dashboard</a>
+      <a th:href="@{/admin/events}"        class="sidebar-link active"><span class="link-icon">📅</span> Manage Events</a>
+      <a th:href="@{/admin/events/new}"    class="sidebar-link"><span class="link-icon">➕</span> Add Event</a>
+      <a th:href="@{/admin/registrations}" class="sidebar-link"><span class="link-icon">👥</span> All Registrations</a>
+      <a th:href="@{/admin/statistics}"    class="sidebar-link"><span class="link-icon">📈</span> Statistics</a>
+      <a th:href="@{/}"                    class="sidebar-link"><span class="link-icon">🏠</span> Student Portal</a>
+    </nav>
+    <div class="sidebar-footer">
+      <form th:action="@{/admin/logout}" method="post">
+        <button type="submit" class="sidebar-logout">🚪 Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <a th:href="@{/admin/events}" class="btn btn-ghost btn-sm">← Back to Events</a>
+        <h1 class="admin-page-title" style="margin-left:16px">Registered Students</h1>
+      </div>
+      <a th:href="@{/admin/registrations}" class="btn btn-outline btn-sm">View All Registrations</a>
+    </header>
+
+    <div class="admin-content">
+      <div th:replace="~{fragments/layout :: messages}"></div>
+
+      <!-- Event Info Banner -->
+      <div class="event-info-banner">
+        <div class="event-banner-left">
+          <span th:text="${event.eventType}"
+                th:class="'badge badge-' + ${#strings.toLowerCase(event.eventType)}">TYPE</span>
+          <h2 th:text="${event.name}">Event Name</h2>
+          <div class="event-banner-meta">
+            <span>📅 <span th:text="${#temporals.format(event.date, 'dd MMM yyyy')}">Date</span></span>
+            <span>📍 <span th:text="${event.venue}">Venue</span></span>
+            <span>🏛️ <span th:text="${event.department}">Dept</span></span>
+          </div>
+        </div>
+        <div class="event-banner-stat">
+          <span class="big-count" th:text="${#lists.size(registrations)}">0</span>
+          <span class="big-count-label">Total Registrations</span>
+          <span th:if="${event.capacity != null}"
+                th:text="'Capacity: ' + ${event.capacity}"
+                class="capacity-note">Capacity</span>
+        </div>
+      </div>
+
+      <!-- Registrations Table -->
+      <div class="admin-card">
+        <div class="admin-card-title-row">
+          <h2 class="admin-card-title">👥 Registered Students</h2>
+          <span th:if="${#lists.isEmpty(registrations)}" class="empty-badge">No registrations yet</span>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(registrations)}" class="empty-state small">
+          <div class="empty-icon">📭</div>
+          <p>No students have registered for this event yet.</p>
+          <a th:href="@{/events/{id}(id=${event.id})}" target="_blank" class="btn btn-outline">View Event Page</a>
+        </div>
+
+        <!-- Registrations Table -->
+        <table class="admin-table" th:unless="${#lists.isEmpty(registrations)}">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Email</th>
+              <th>Student ID</th>
+              <th>Department</th>
+              <th>Phone</th>
+              <th>Registered At</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="reg, iter : ${registrations}">
+              <td th:text="${iter.index + 1}">1</td>
+              <td>
+                <div class="student-name-cell">
+                  <div class="student-avatar"
+                       th:text="${#strings.substring(reg.student.name, 0, 1)}">A</div>
+                  <span th:text="${reg.student.name}">Name</span>
+                </div>
+              </td>
+              <td>
+                <a th:href="'mailto:' + ${reg.student.email}"
+                   th:text="${reg.student.email}"
+                   class="table-link email-link">email</a>
+              </td>
+              <td>
+                <code th:text="${reg.student.studentId}">ID</code>
+              </td>
+              <td th:text="${reg.student.department}">Dept</td>
+              <td th:text="${reg.student.phone != null ? reg.student.phone : '—'}">Phone</td>
+              <td th:text="${#temporals.format(reg.registeredAt, 'dd MMM yyyy, hh:mm a')}">Time</td>
+              <td>
+                <span th:text="${reg.status}"
+                      th:class="'status-badge status-' + ${#strings.toLowerCase(reg.status)}">
+                  CONFIRMED
+                </span>
+              </td>
+              <td>
+                <form th:action="@{/admin/registrations/{rid}/cancel(rid=${reg.id})}"
+                      method="post" style="display:inline"
+                      onsubmit="return confirm('Cancel this student\'s registration?')">
+                  <input type="hidden" name="eventId" th:value="${event.id}"/>
+                  <button type="submit" class="btn btn-danger btn-xs">Cancel</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Export hint -->
+        <div class="table-footer-note" th:unless="${#lists.isEmpty(registrations)}">
+          <span th:text="'Showing all ' + ${#lists.size(registrations)} + ' registered students'"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

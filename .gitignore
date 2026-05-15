@@ -1,0 +1,59 @@
+# ============================================================
+#  .gitignore — Smart Campus Event Management System
+# ============================================================
+
+# ── Maven build output ────────────────────────────────────────
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ── IntelliJ IDEA ─────────────────────────────────────────────
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+
+# ── Eclipse ───────────────────────────────────────────────────
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# ── VS Code ───────────────────────────────────────────────────
+.vscode/
+
+# ── Spring Boot ───────────────────────────────────────────────
+spring-shell.log
+*.log
+logs/
+
+# ── H2 Database files (local only — don't commit DB data) ─────
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# ── OS files ──────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── Environment / Secrets ─────────────────────────────────────
+# IMPORTANT: Never commit real passwords or API keys
+# application.properties is included but with placeholder values
+# For production, use environment variables instead
+
+# ── Maven Wrapper ─────────────────────────────────────────────
+!.mvn/wrapper/maven-wrapper.properties

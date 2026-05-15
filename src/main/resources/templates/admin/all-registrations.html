@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All Registrations | Admin</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo"><span>🎓</span><span>CampusEvents</span></div>
+    <nav class="sidebar-nav">
+      <a th:href="@{/admin/dashboard}"     class="sidebar-link"><span class="link-icon">📊</span> Dashboard</a>
+      <a th:href="@{/admin/events}"        class="sidebar-link"><span class="link-icon">📅</span> Manage Events</a>
+      <a th:href="@{/admin/events/new}"    class="sidebar-link"><span class="link-icon">➕</span> Add Event</a>
+      <a th:href="@{/admin/registrations}" class="sidebar-link active"><span class="link-icon">👥</span> All Registrations</a>
+      <a th:href="@{/admin/statistics}"    class="sidebar-link"><span class="link-icon">📈</span> Statistics</a>
+      <a th:href="@{/}"                    class="sidebar-link"><span class="link-icon">🏠</span> Student Portal</a>
+    </nav>
+    <div class="sidebar-footer">
+      <form th:action="@{/admin/logout}" method="post">
+        <button type="submit" class="sidebar-logout">🚪 Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <h1 class="admin-page-title">All Student Registrations</h1>
+      <div class="topbar-right">
+        <span class="total-count-pill" th:text="${totalCount} + ' total registrations'">0</span>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div th:replace="~{fragments/layout :: messages}"></div>
+
+      <!-- Search bar (client-side filter) -->
+      <div class="filter-card">
+        <div class="filter-row">
+          <div class="form-group flex-1" style="margin-bottom:0">
+            <input type="text" id="searchInput" class="form-input"
+                   placeholder="🔍 Search by student name, email, student ID or event name..."
+                   oninput="filterTable()"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div th:if="${#lists.isEmpty(registrations)}" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No Registrations Yet</h3>
+        <p>Students haven't registered for any events yet.</p>
+        <a th:href="@{/admin/events}" class="btn btn-primary">View Events</a>
+      </div>
+
+      <!-- Table -->
+      <div class="admin-card" th:unless="${#lists.isEmpty(registrations)}">
+        <table class="admin-table" id="regTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Email</th>
+              <th>Student ID</th>
+              <th>Department</th>
+              <th>Event Name</th>
+              <th>Event Type</th>
+              <th>Event Date</th>
+              <th>Registered At</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="regTableBody">
+            <tr th:each="reg, iter : ${registrations}">
+              <td th:text="${iter.index + 1}">1</td>
+              <td>
+                <div class="student-name-cell">
+                  <div class="student-avatar"
+                       th:text="${#strings.substring(reg.student.name, 0, 1)}">A</div>
+                  <span th:text="${reg.student.name}">Name</span>
+                </div>
+              </td>
+              <td>
+                <a th:href="'mailto:' + ${reg.student.email}"
+                   th:text="${reg.student.email}" class="table-link email-link">email</a>
+              </td>
+              <td><code th:text="${reg.student.studentId}">ID</code></td>
+              <td th:text="${reg.student.department}">Dept</td>
+              <td>
+                <a th:href="@{/admin/events/{id}/registrations(id=${reg.event.id})}"
+                   th:text="${reg.event.name}"
+                   class="table-link">Event</a>
+              </td>
+              <td>
+                <span th:text="${reg.event.eventType}"
+                      th:class="'badge badge-sm badge-' + ${#strings.toLowerCase(reg.event.eventType)}">
+                  TYPE
+                </span>
+              </td>
+              <td th:text="${#temporals.format(reg.event.date, 'dd MMM yyyy')}">Date</td>
+              <td th:text="${#temporals.format(reg.registeredAt, 'dd MMM yy, hh:mm a')}">Time</td>
+              <td>
+                <span th:text="${reg.status}"
+                      th:class="'status-badge status-' + ${#strings.toLowerCase(reg.status)}">
+                  CONFIRMED
+                </span>
+              </td>
+              <td>
+                <form th:action="@{/admin/registrations/{rid}/cancel(rid=${reg.id})}"
+                      method="post" style="display:inline"
+                      onsubmit="return confirm('Cancel this registration?')">
+                  <button type="submit" class="btn btn-danger btn-xs">Cancel</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="table-footer-note">
+          <span id="visibleCount" th:text="'Showing all ' + ${totalCount} + ' registrations'"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script th:src="@{/js/main.js}"></script>
+  <script>
+    function filterTable() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const rows = document.querySelectorAll('#regTableBody tr');
+      let visible = 0;
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const show = text.includes(q);
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('visibleCount').textContent =
+        q ? ('Showing ' + visible + ' of ' + rows.length + ' registrations') :
+            ('Showing all ' + rows.length + ' registrations');
+    }
+  </script>
+</body>
+</html>

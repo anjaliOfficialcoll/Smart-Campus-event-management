@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Help & Campus Map | CampusEvents</title>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link rel="stylesheet" th:href="@{/css/help.css}"/>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <!-- Leaflet.js — open-source interactive maps (no API key needed) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <div th:replace="~{fragments/layout :: navbar}"></div>
+
+  <!-- ── PAGE HERO ── -->
+  <section class="help-hero">
+    <div class="help-hero-content">
+      <div class="hero-badge">🎓 Student Help Centre</div>
+      <h1 class="help-hero-title">How can we <span class="accent">help you?</span></h1>
+      <p class="help-hero-sub">
+        Use the interactive campus map to find venues, or chat with our
+        AI assistant for instant answers about events and registration.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── MAIN LAYOUT: MAP LEFT + CHATBOT RIGHT ── -->
+  <div class="help-layout container" id="map">
+    
+    <!-- ════════════════════════════════════════
+         LEFT PANEL — Campus Map
+    ════════════════════════════════════════ -->
+    <div class="map-panel">
+      <div class="panel-header">
+        <div class="panel-title-row">
+          <span class="panel-icon">🗺️</span>
+          <div>
+            <h2 class="panel-title">Campus Map</h2>
+            <p class="panel-sub">Click any marker to see venue details &amp; upcoming events</p>
+          </div>
+        </div>
+        <!-- Search box to find venues on the map -->
+        <div class="map-search-box">
+          <input type="text" id="venueSearch" placeholder="🔍 Search venue (e.g. Auditorium)..."
+                 class="map-search-input" oninput="searchVenue(this.value)"/>
+        </div>
+      </div>
+
+      <!-- Leaflet Map Container -->
+      <div id="campusMap" class="map-container"></div>
+
+      <!-- Map Legend -->
+      <div class="map-legend">
+        <span class="legend-title">Legend:</span>
+        <span class="legend-item"><span class="legend-dot academic"></span>Academic</span>
+        <span class="legend-item"><span class="legend-dot events"></span>Events</span>
+        <span class="legend-item"><span class="legend-dot sports"></span>Sports</span>
+        <span class="legend-item"><span class="legend-dot facility"></span>Facilities</span>
+        <span class="legend-item"><span class="legend-dot event-pin"></span>Event Today</span>
+      </div>
+
+      <!-- Venue quick-links -->
+      <div class="venue-chips">
+        <button class="venue-chip" onclick="flyToVenue('Main Auditorium')">🎭 Auditorium</button>
+        <button class="venue-chip" onclick="flyToVenue('CS & IT Block')">💻 CS &amp; IT</button>
+        <button class="venue-chip" onclick="flyToVenue('R&D Research Block')">🧪 R&amp;D Block</button>
+        <button class="venue-chip" onclick="flyToVenue('Central Library')">📚 Library</button>
+        <button class="venue-chip" onclick="flyToVenue('Main Canteen')">🍽️ Canteen</button>
+        <button class="venue-chip" onclick="flyToVenue('Cricket Ground')">🏏 Cricket</button>
+        <button class="venue-chip" onclick="flyToVenue('Medical Centre')">🏥 Medical</button>
+        <button class="venue-chip" onclick="flyToVenue('Admin Block')">🏢 Admin</button>
+        <button class="venue-chip" onclick="flyToVenue('Boys Hostel')">🏠 Hostel</button>
+        <button class="venue-chip" onclick="flyToVenue('Bus Stand')">🚌 Bus Stand</button>
+        <button class="venue-chip" onclick="flyToVenue('Placement Cell')">👔 Placement</button>
+        <button class="venue-chip" onclick="flyToVenue('Open Air Theatre')">🌟 OAT</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         RIGHT PANEL — Chatbot
+    ════════════════════════════════════════ -->
+    <div class="chatbot-panel" id="chatbot">
+      <div class="panel-header chatbot-header">
+        <div class="panel-title-row">
+          <div class="bot-avatar">🤖</div>
+          <div>
+            <h2 class="panel-title">Campus Help Bot</h2>
+            <p class="panel-sub">
+              <span class="online-dot"></span> Online — Ask me anything!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Messages Window -->
+      <div class="chat-messages" id="chatMessages">
+        <!-- Initial welcome message from bot -->
+        <div class="msg bot-msg" id="welcomeMsg">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble">
+            <p>👋 Hi! I'm the <strong>CampusEvents Help Bot</strong>.</p>
+            <p style="margin-top:8px">I can help you with:</p>
+            <ul class="bot-list">
+              <li>📅 Finding and registering for events</li>
+              <li>🗺️ Locating venues on the campus map</li>
+              <li>🎫 Checking your registrations</li>
+              <li>💬 Submitting event feedback</li>
+            </ul>
+            <p style="margin-top:8px">What would you like to know?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Reply Suggestions -->
+      <div class="quick-replies" id="quickReplies">
+        <button class="qr-btn" onclick="sendQuick('How do I register for an event?')">✏️ How to register?</button>
+        <button class="qr-btn" onclick="sendQuick('Show upcoming events')">📅 Upcoming events</button>
+        <button class="qr-btn" onclick="sendQuick('Where is the Main Auditorium?')">🗺️ Find Auditorium</button>
+        <button class="qr-btn" onclick="sendQuick('How do I find my registered events?')">🎫 My events</button>
+        <button class="qr-btn" onclick="sendQuick('What event types are available?')">🏷️ Event types</button>
+        <button class="qr-btn" onclick="sendQuick('I did not receive my confirmation email')">📧 Email help</button>
+      </div>
+
+      <!-- Chat Input -->
+      <div class="chat-input-area">
+        <input type="text"
+               id="chatInput"
+               class="chat-input"
+               placeholder="Type your question here..."
+               onkeydown="handleKey(event)"
+               maxlength="300"/>
+        <button class="chat-send-btn" onclick="sendMessage()" id="sendBtn">
+          <span id="sendIcon">➤</span>
+        </button>
+      </div>
+      <p class="chat-disclaimer">
+        Tip: You can ask about venues, registration, events, or feedback.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── FAQ SECTION ── -->
+  <section class="faq-section container">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <div class="faq-grid">
+
+      <div class="faq-card" onclick="toggleFaq(this)">
+        <div class="faq-q">How do I register for an event? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">
+          Browse events on the home page, click on any event, then click
+          <strong>Register</strong>. Fill in your name, student ID, email, and
+          department. After submitting, you'll receive a confirmation email with a QR code.
+        </div>
+      </div>
+
+      <div class="faq-card" onclick="toggleFaq(this)">
+        <div class="faq-q">Where do I find my registered events? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">
+          Click <strong>My Events</strong> in the navigation bar and enter the email
+          address you used when registering. All your registrations will be displayed.
+        </div>
+      </div>
+
+      <div class="faq-card" onclick="toggleFaq(this)">
+        <div class="faq-q">I didn't receive a confirmation email. What should I do? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">
+          Check your <strong>Spam/Junk</strong> folder first. Emails may take 2–3 minutes
+          to arrive. If you still don't receive it, verify the email you entered during
+          registration, or contact the admin.
+        </div>
+      </div>
+
+      <div class="faq-card" onclick="toggleFaq(this)">
+        <div class="faq-q">How do I submit feedback for an event? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">
+          Go to the event details page and click <strong>Submit Feedback</strong>.
+          Enter your registered email, give a star rating (1–5), and write your comments.
+          You must be registered for the event to submit feedback.
+        </div>
+      </div>
+
+      <div class="faq-card" onclick="toggleFaq(this)">
+        <div class="faq-q">Can I register for multiple events? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">
+          Yes! You can register for as many upcoming events as you like. Each registration
+          will send a separate confirmation email with a unique QR code entry pass.
+        </div>
+      </div>
+
+      <div class="faq-card" onclick="toggleFaq(this)">
+        <div class="faq-q">What is the QR code used for? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">
+          The QR code in your confirmation email is your <strong>digital entry pass</strong>.
+          Show it at the event entrance for quick check-in. It encodes your registration
+          details so staff can verify your attendance instantly.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div th:replace="~{fragments/layout :: footer}"></div>
+
+  <!-- ── JAVASCRIPT ── -->
+
+  <!-- Pass upcoming events from Spring to JS as JSON -->
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const upcomingEvents = /*[[${upcomingEvents}]]*/ [];
+    /*]]>*/
+  </script>
+
+  <script th:src="@{/js/campus-map.js}"></script>
+  <script th:src="@{/js/chatbot.js}"></script>
+  <script th:src="@{/js/main.js}"></script>
+
+</body>
+</html>

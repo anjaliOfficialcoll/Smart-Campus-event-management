@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Statistics | Admin</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo"><span>🎓</span><span>CampusEvents</span></div>
+    <nav class="sidebar-nav">
+      <a th:href="@{/admin/dashboard}" class="sidebar-link"><span class="link-icon">📊</span> Dashboard</a>
+      <a th:href="@{/admin/events}" class="sidebar-link"><span class="link-icon">📅</span> Manage Events</a>
+      <a th:href="@{/admin/events/new}" class="sidebar-link"><span class="link-icon">➕</span> Add Event</a>
+      <a th:href="@{/admin/statistics}" class="sidebar-link active"><span class="link-icon">📈</span> Statistics</a>
+      <a th:href="@{/}" class="sidebar-link"><span class="link-icon">🏠</span> Student Portal</a>
+    </nav>
+    <div class="sidebar-footer">
+      <form th:action="@{/admin/logout}" method="post">
+        <button type="submit" class="sidebar-logout">🚪 Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <h1 class="admin-page-title">Registration Statistics</h1>
+    </header>
+
+    <div class="admin-content">
+      <!-- Summary Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon">📅</div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${totalEvents}">0</div>
+            <div class="stat-label">Total Events</div>
+          </div>
+        </div>
+        <div class="stat-card stat-orange">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${totalRegistrations}">0</div>
+            <div class="stat-label">Total Registrations</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registration Table -->
+      <div class="admin-card">
+        <h2 class="admin-card-title">📊 Registrations per Event</h2>
+
+        <div th:if="${stats.isEmpty()}" class="empty-state small">
+          <p>No registration data available yet.</p>
+        </div>
+
+        <table class="admin-table" th:unless="${stats.isEmpty()}">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Event Name</th>
+              <th>Registrations</th>
+              <th>Visual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Find max value for bar scaling -->
+            <tr th:each="entry, iter : ${stats}">
+              <td th:text="${iter.index + 1}">1</td>
+              <td th:text="${entry.key}">Event Name</td>
+              <td>
+                <span class="reg-count-big" th:text="${entry.value}">0</span>
+              </td>
+              <td class="bar-cell">
+                <!-- Visual bar — width is proportional to registrations, max 200px at 20 registrations -->
+                <div class="stat-bar-track">
+                  <div class="stat-bar-fill"
+                       th:style="'width: ' + ${entry.value > 0 ? (entry.value * 100 / (totalRegistrations > 0 ? totalRegistrations : 1)) : 0} + '%'">
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bar Chart (CSS only) -->
+      <div class="admin-card" th:unless="${stats.isEmpty()}">
+        <h2 class="admin-card-title">📉 Visual Chart</h2>
+        <div class="bar-chart">
+          <div class="bar-chart-body">
+            <div class="bar-item" th:each="entry : ${stats}">
+              <div class="bar-wrapper">
+                <div class="bar-fill"
+                     th:style="'height: ' + ${entry.value > 0 ? (entry.value * 100 / (totalRegistrations > 0 ? totalRegistrations : 1) * 2) : 2} + 'px'"
+                     th:title="${entry.key + ': ' + entry.value + ' registrations'}">
+                  <span class="bar-tooltip" th:text="${entry.value}">0</span>
+                </div>
+              </div>
+              <div class="bar-label" th:text="${#strings.abbreviate(entry.key, 18)}">Label</div>
+            </div>
+          </div>
+        </div>
+        <p class="chart-note">* Bar height proportional to share of total registrations</p>
+      </div>
+    </div>
+  </main>
+
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

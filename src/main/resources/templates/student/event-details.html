@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${pageTitle} + ' | CampusEvents'">Event Details</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <div th:replace="~{fragments/layout :: navbar}"></div>
+
+  <div class="container section">
+    <!-- Flash Messages -->
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a th:href="@{/}">Home</a> &rsaquo;
+      <span th:text="${event.name}">Event</span>
+    </nav>
+
+    <!-- Event Detail Card -->
+    <div class="detail-card">
+      <div class="detail-header">
+        <div class="detail-badges">
+          <span th:text="${event.eventType}"
+                th:class="'badge badge-' + ${#strings.toLowerCase(event.eventType)}">TYPE</span>
+          <span class="badge badge-dept" th:text="${event.department}">Dept</span>
+        </div>
+        <h1 class="detail-title" th:text="${event.name}">Event Name</h1>
+
+        <div class="detail-meta-row">
+          <div class="detail-meta-item">
+            <span class="meta-icon">📅</span>
+            <div>
+              <span class="meta-label">Date</span>
+              <span class="meta-value" th:text="${#temporals.format(event.date, 'EEEE, dd MMMM yyyy')}">Date</span>
+            </div>
+          </div>
+          <div class="detail-meta-item" th:if="${event.time != null}">
+            <span class="meta-icon">🕐</span>
+            <div>
+              <span class="meta-label">Time</span>
+              <span class="meta-value" th:text="${#temporals.format(event.time, 'hh:mm a')}">Time</span>
+            </div>
+          </div>
+          <div class="detail-meta-item">
+            <span class="meta-icon">📍</span>
+            <div>
+              <span class="meta-label">Venue</span>
+              <span class="meta-value" th:text="${event.venue}">Venue</span>
+            </div>
+          </div>
+          <div class="detail-meta-item">
+            <span class="meta-icon">👥</span>
+            <div>
+              <span class="meta-label">Registered</span>
+              <span class="meta-value" th:text="${event.registrationCount} + ' students'">0 students</span>
+            </div>
+          </div>
+          <div class="detail-meta-item" th:if="${event.capacity != null}">
+            <span class="meta-icon">🪑</span>
+            <div>
+              <span class="meta-label">Capacity</span>
+              <span class="meta-value" th:text="${event.capacity} + ' seats'">Seats</span>
+            </div>
+          </div>
+          <div class="detail-meta-item" th:if="${averageRating > 0}">
+            <span class="meta-icon">⭐</span>
+            <div>
+              <span class="meta-label">Rating</span>
+              <span class="meta-value" th:text="${#numbers.formatDecimal(averageRating, 1, 1)} + ' / 5'">0/5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <h2 class="section-sub-title">About this Event</h2>
+        <p class="detail-description" th:text="${event.description}">Description</p>
+
+        <!-- Action Buttons -->
+        <div class="detail-actions">
+          <a th:href="@{/register/{id}(id=${event.id})}" class="btn btn-primary btn-lg">
+            ✏️ Register for this Event
+          </a>
+          <a th:href="@{/feedback/{id}(id=${event.id})}" class="btn btn-outline btn-lg">
+            💬 Submit Feedback
+          </a>
+          <a th:href="@{/}" class="btn btn-ghost">← Back to Events</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Section -->
+    <div class="feedback-section" th:if="${!#lists.isEmpty(feedbacks)}">
+      <h2 class="section-title">Student Feedback
+        <span class="feedback-count" th:text="'(' + ${#lists.size(feedbacks)} + ' reviews)'"></span>
+      </h2>
+
+      <!-- Average Rating Display -->
+      <div class="rating-summary" th:if="${averageRating > 0}">
+        <div class="rating-score" th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">0.0</div>
+        <div class="rating-stars">
+          <span th:each="i : ${#numbers.sequence(1, 5)}"
+                th:text="${i <= averageRating} ? '★' : '☆'"
+                th:class="${i <= averageRating} ? 'star filled' : 'star'"
+                class="star">★</span>
+        </div>
+        <div class="rating-label" th:text="${#lists.size(feedbacks)} + ' ratings'">0 ratings</div>
+      </div>
+
+      <!-- Individual Feedback Cards -->
+      <div class="feedback-grid">
+        <div class="feedback-card" th:each="fb : ${feedbacks}">
+          <div class="feedback-header">
+            <div class="feedback-author">
+              <div class="avatar" th:text="${#strings.substring(fb.student.name, 0, 1)}">A</div>
+              <div>
+                <strong th:text="${fb.student.name}">Student Name</strong>
+                <span class="feedback-date" th:text="${#temporals.format(fb.submittedAt, 'dd MMM yyyy')}">Date</span>
+              </div>
+            </div>
+            <div class="feedback-rating">
+              <span th:each="i : ${#numbers.sequence(1, 5)}"
+                    th:text="${i <= fb.rating} ? '★' : '☆'"
+                    th:class="${i <= fb.rating} ? 'star filled' : 'star'">★</span>
+            </div>
+          </div>
+          <p class="feedback-comment" th:text="${fb.comments}">Comment</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Feedback Yet -->
+    <div class="empty-state small" th:if="${#lists.isEmpty(feedbacks)}">
+      <p>💬 No feedback yet. Be the first to share your experience!</p>
+      <a th:href="@{/feedback/{id}(id=${event.id})}" class="btn btn-outline">Submit Feedback</a>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/layout :: footer}"></div>
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

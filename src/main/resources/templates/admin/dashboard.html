@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | Admin | CampusEvents</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <span>🎓</span>
+      <span>CampusEvents</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a th:href="@{/admin/dashboard}" class="sidebar-link active">
+        <span class="link-icon">📊</span> Dashboard
+      </a>
+      <a th:href="@{/admin/events}" class="sidebar-link">
+        <span class="link-icon">📅</span> Manage Events
+      </a>
+      <a th:href="@{/admin/events/new}" class="sidebar-link">
+        <span class="link-icon">➕</span> Add Event
+      </a>
+      <a th:href="@{/admin/statistics}" class="sidebar-link">
+        <span class="link-icon">📈</span> Statistics
+      </a>
+      <a th:href="@{/}" class="sidebar-link">
+        <span class="link-icon">🏠</span> Student Portal
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <form th:action="@{/admin/logout}" method="post">
+        <button type="submit" class="sidebar-logout">🚪 Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Top Bar -->
+    <header class="admin-topbar">
+      <h1 class="admin-page-title">Dashboard</h1>
+      <div class="topbar-right">
+        <span class="admin-user">
+          👤 <span sec:authentication="name">admin</span>
+          <span class="admin-badge">ADMIN</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <!-- Flash Messages -->
+      <div th:replace="~{fragments/layout :: messages}"></div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon">📅</div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${totalEvents}">0</div>
+            <div class="stat-label">Total Events</div>
+          </div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${upcomingCount}">0</div>
+            <div class="stat-label">Upcoming Events</div>
+          </div>
+        </div>
+        <div class="stat-card stat-orange">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <div class="stat-value" th:text="${totalRegistrations}">0</div>
+            <div class="stat-label">Total Registrations</div>
+          </div>
+        </div>
+        <div class="stat-card stat-purple">
+          <div class="stat-icon">🏛️</div>
+          <div class="stat-info">
+            <div class="stat-value">5+</div>
+            <div class="stat-label">Departments</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions + Recent Events -->
+      <div class="dashboard-grid">
+        <!-- Quick Actions -->
+        <div class="admin-card">
+          <h2 class="admin-card-title">⚡ Quick Actions</h2>
+          <div class="quick-actions">
+            <a th:href="@{/admin/events/new}" class="quick-action-btn">
+              <span>➕</span>
+              <span>Add New Event</span>
+            </a>
+            <a th:href="@{/admin/events}" class="quick-action-btn">
+              <span>📋</span>
+              <span>Manage Events</span>
+            </a>
+            <a th:href="@{/admin/statistics}" class="quick-action-btn">
+              <span>📈</span>
+              <span>View Statistics</span>
+            </a>
+            <a th:href="@{/}" target="_blank" class="quick-action-btn">
+              <span>🏠</span>
+              <span>Student Portal</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Recent / Upcoming Events -->
+        <div class="admin-card">
+          <h2 class="admin-card-title">📅 Upcoming Events</h2>
+          <div th:if="${#lists.isEmpty(recentEvents)}" class="empty-mini">
+            No upcoming events.
+          </div>
+          <table class="mini-table" th:unless="${#lists.isEmpty(recentEvents)}">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Registered</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="event : ${recentEvents}">
+                <td>
+                  <span th:text="${event.name}">Name</span><br/>
+                  <small th:text="${event.eventType}"
+                         th:class="'badge badge-sm badge-' + ${#strings.toLowerCase(event.eventType)}">TYPE</small>
+                </td>
+                <td th:text="${#temporals.format(event.date, 'dd MMM')}">Date</td>
+                <td>
+          <a th:href="@{/admin/events/{id}/students(id=${event.id})}" 
+             class="reg-count-link" title="View Registered Students">
+             👥 <span th:text="${event.registrationCount}">0</span>
+          </a>
+        </td>
+                <td>
+                  <a th:href="@{/admin/events/{id}/edit(id=${event.id})}"
+                     class="btn btn-outline btn-xs">Edit</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="card-footer-link">
+            <a th:href="@{/admin/events}">View all events →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

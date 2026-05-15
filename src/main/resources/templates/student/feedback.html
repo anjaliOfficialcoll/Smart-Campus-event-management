@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Feedback | CampusEvents</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <div th:replace="~{fragments/layout :: navbar}"></div>
+
+  <div class="container section">
+    <nav class="breadcrumb">
+      <a th:href="@{/}">Home</a> &rsaquo;
+      <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.name}">Event</a> &rsaquo;
+      <span>Feedback</span>
+    </nav>
+
+    <div class="form-page-layout">
+      <!-- Event Sidebar -->
+      <div class="form-sidebar">
+        <div class="sidebar-card">
+          <h3>📋 Event</h3>
+          <div class="sidebar-info">
+            <div class="sidebar-item">
+              <strong th:text="${event.name}">Event Name</strong>
+            </div>
+            <div class="sidebar-item">
+              <span class="sidebar-label">Date</span>
+              <span th:text="${#temporals.format(event.date, 'dd MMM yyyy')}">Date</span>
+            </div>
+            <div class="sidebar-item">
+              <span class="sidebar-label">Type</span>
+              <span th:text="${event.eventType}"
+                    th:class="'badge badge-' + ${#strings.toLowerCase(event.eventType)}">TYPE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-card info-box">
+          <h3>💡 Tips</h3>
+          <ul class="tips-list">
+            <li>Be specific about what you liked or didn't like</li>
+            <li>Your feedback helps improve future events</li>
+            <li>You must be registered to submit feedback</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Feedback Form -->
+      <div class="form-main">
+        <div class="form-card">
+          <div class="form-card-header">
+            <h2>💬 Submit Your Feedback</h2>
+            <p>Share your experience to help us improve</p>
+          </div>
+
+          <div th:if="${errorMessage}" class="alert alert-error">
+            <span th:text="${errorMessage}"></span>
+          </div>
+
+          <form th:action="@{/feedback/{eventId}(eventId=${event.id})}"
+                th:object="${feedback}"
+                method="post"
+                class="campus-form">
+
+            <!-- Student Email (hidden or shown) -->
+            <div class="form-group">
+              <label for="studentEmail" class="form-label">Your Email <span class="required">*</span></label>
+              <input type="email" id="studentEmail" name="studentEmail"
+                     th:value="${studentEmail}"
+                     class="form-input"
+                     placeholder="Enter your registered email" required/>
+              <small class="form-hint">Must match the email you used to register</small>
+            </div>
+
+            <!-- Star Rating -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('rating')} ? 'has-error'">
+              <label class="form-label">Rating <span class="required">*</span></label>
+              <div class="star-rating-input">
+                <input type="radio" id="star5" th:field="*{rating}" value="5" class="star-input"/>
+                <label for="star5" class="star-label" title="Excellent">★</label>
+                <input type="radio" id="star4" th:field="*{rating}" value="4" class="star-input"/>
+                <label for="star4" class="star-label" title="Good">★</label>
+                <input type="radio" id="star3" th:field="*{rating}" value="3" class="star-input"/>
+                <label for="star3" class="star-label" title="Average">★</label>
+                <input type="radio" id="star2" th:field="*{rating}" value="2" class="star-input"/>
+                <label for="star2" class="star-label" title="Poor">★</label>
+                <input type="radio" id="star1" th:field="*{rating}" value="1" class="star-input"/>
+                <label for="star1" class="star-label" title="Terrible">★</label>
+              </div>
+              <div class="rating-labels">
+                <span>1 - Poor</span><span>5 - Excellent</span>
+              </div>
+              <span class="field-error" th:if="${#fields.hasErrors('rating')}"
+                    th:errors="*{rating}">Rating error</span>
+            </div>
+
+            <!-- Comments -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('comments')} ? 'has-error'">
+              <label for="comments" class="form-label">Comments <span class="required">*</span></label>
+              <textarea id="comments" th:field="*{comments}"
+                        class="form-input form-textarea"
+                        rows="5"
+                        placeholder="Share your experience — what did you enjoy? What could be improved?"
+                        maxlength="500"></textarea>
+              <span class="field-error" th:if="${#fields.hasErrors('comments')}"
+                    th:errors="*{comments}">Comments error</span>
+              <small class="form-hint">Minimum 10 characters, maximum 500 characters</small>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-lg btn-full">
+                📨 Submit Feedback
+              </button>
+              <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-ghost">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/layout :: footer}"></div>
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

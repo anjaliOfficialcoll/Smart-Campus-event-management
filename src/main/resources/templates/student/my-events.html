@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Events | CampusEvents</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <div th:replace="~{fragments/layout :: navbar}"></div>
+
+  <div class="container section">
+    <div class="section-header">
+      <h1 class="section-title">My Registered Events</h1>
+      <p class="section-sub">Enter your email to view all events you have registered for</p>
+    </div>
+
+    <!-- Email Lookup Form -->
+    <div class="lookup-card">
+      <form th:action="@{/my-events}" method="post" class="campus-form lookup-form">
+        <div class="lookup-row">
+          <div class="form-group flex-1">
+            <label for="email" class="form-label">Your Email Address</label>
+            <input type="email"
+                   id="email"
+                   name="email"
+                   class="form-input"
+                   th:value="${studentEmail}"
+                   placeholder="Enter the email you used when registering"
+                   required/>
+          </div>
+          <button type="submit" class="btn btn-primary">🔍 Find My Events</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Flash / Error / Info Messages -->
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <!-- ── Results (only shown after form is submitted) ── -->
+    <div th:if="${registrations != null}">
+
+      <!-- No Results -->
+      <div th:if="${#lists.isEmpty(registrations)}" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No Registrations Found</h3>
+        <p th:text="'No events registered under: ' + ${studentEmail}">No events found.</p>
+        <a th:href="@{/}" class="btn btn-primary">Browse Upcoming Events</a>
+      </div>
+
+      <!-- Registration Cards -->
+      <div th:unless="${#lists.isEmpty(registrations)}">
+        <div class="my-events-header">
+          <h2 th:text="'Events for ' + ${studentEmail}">Events</h2>
+          <span class="count-badge"
+                th:text="${#lists.size(registrations)} + ' registration(s)'">0</span>
+        </div>
+
+        <div class="my-events-list">
+          <!--
+            Use th:if="${reg.event != null}" to guard every card —
+            this prevents the EL1007E null pointer if a registration
+            has a broken event FK reference.
+          -->
+          <div class="my-event-card"
+               th:each="reg : ${registrations}"
+               th:if="${reg != null and reg.event != null and reg.student != null}">
+
+            <!-- Status Badge -->
+            <div>
+              <span th:text="${reg.status}"
+                    th:class="'status-badge status-' + ${#strings.toLowerCase(reg.status != null ? reg.status : 'confirmed')}">
+                CONFIRMED
+              </span>
+            </div>
+
+            <!-- Event Info -->
+            <div class="my-event-info">
+              <h3>
+                <a th:href="@{/events/{id}(id=${reg.event.id})}"
+                   th:text="${reg.event.name}">Event Name</a>
+              </h3>
+              <div class="my-event-meta">
+                <span>📅
+                  <span th:text="${reg.event.date != null}
+                                  ? ${#temporals.format(reg.event.date, 'dd MMM yyyy')}
+                                  : 'Date TBD'">Date</span>
+                </span>
+                <span th:if="${reg.event.venue != null}">
+                  📍 <span th:text="${reg.event.venue}">Venue</span>
+                </span>
+                <span th:if="${reg.event.eventType != null}">
+                  🏷️ <span th:text="${reg.event.eventType}">Type</span>
+                </span>
+                <span th:if="${reg.event.department != null}">
+                  🏛️ <span th:text="${reg.event.department}">Dept</span>
+                </span>
+              </div>
+              <small class="registered-on">
+                Registered on:
+                <span th:text="${reg.registeredAt != null}
+                                ? ${#temporals.format(reg.registeredAt, 'dd MMM yyyy, hh:mm a')}
+                                : '—'">time</span>
+              </small>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="my-event-actions">
+              <a th:href="@{/events/{id}(id=${reg.event.id})}"
+                 class="btn btn-outline btn-sm">View Event</a>
+              <a th:href="@{/feedback/{id}(id=${reg.event.id}, email=${studentEmail})}"
+                 class="btn btn-ghost btn-sm">Leave Feedback</a>
+            </div>
+
+          </div><!-- end th:each -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Initial state — form not yet submitted ── -->
+    <div th:if="${registrations == null}" class="empty-state">
+      <div class="empty-icon">🎫</div>
+      <h3>View Your Registered Events</h3>
+      <p>Enter your email address above to see all campus events you have registered for.</p>
+    </div>
+
+  </div><!-- end container -->
+
+  <div th:replace="~{fragments/layout :: footer}"></div>
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

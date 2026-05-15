@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${pageTitle} + ' | CampusEvents'">Register</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <div th:replace="~{fragments/layout :: navbar}"></div>
+
+  <div class="container section">
+    <nav class="breadcrumb">
+      <a th:href="@{/}">Home</a> &rsaquo;
+      <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.name}">Event</a> &rsaquo;
+      <span>Register</span>
+    </nav>
+
+    <div class="form-page-layout">
+      <!-- Event Info Sidebar -->
+      <div class="form-sidebar">
+        <div class="sidebar-card">
+          <h3>📋 Event Details</h3>
+          <div class="sidebar-info">
+            <div class="sidebar-item">
+              <span class="sidebar-label">Event</span>
+              <strong th:text="${event.name}">Name</strong>
+            </div>
+            <div class="sidebar-item">
+              <span class="sidebar-label">Date</span>
+              <span th:text="${#temporals.format(event.date, 'dd MMM yyyy')}">Date</span>
+            </div>
+            <div class="sidebar-item" th:if="${event.time != null}">
+              <span class="sidebar-label">Time</span>
+              <span th:text="${#temporals.format(event.time, 'hh:mm a')}">Time</span>
+            </div>
+            <div class="sidebar-item">
+              <span class="sidebar-label">Venue</span>
+              <span th:text="${event.venue}">Venue</span>
+            </div>
+            <div class="sidebar-item">
+              <span class="sidebar-label">Type</span>
+              <span th:text="${event.eventType}"
+                    th:class="'badge badge-' + ${#strings.toLowerCase(event.eventType)}">TYPE</span>
+            </div>
+            <div class="sidebar-item">
+              <span class="sidebar-label">Department</span>
+              <span th:text="${event.department}">Dept</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registration Form -->
+      <div class="form-main">
+        <div class="form-card">
+          <div class="form-card-header">
+            <h2>✏️ Register for Event</h2>
+            <p>Fill in your details to secure your spot</p>
+          </div>
+
+          <!-- Error/Success Messages -->
+          <div th:if="${errorMessage}" class="alert alert-error">
+            <span th:text="${errorMessage}"></span>
+          </div>
+
+          <!--
+            th:object="${student}"  → binds form to the Student object
+            th:action              → posts to /register/{eventId}
+          -->
+          <form th:action="@{/register/{eventId}(eventId=${event.id})}"
+                th:object="${student}"
+                method="post"
+                class="campus-form"
+                novalidate>
+
+            <!-- CSRF token automatically added by Spring Security -->
+
+            <div class="form-row">
+              <!-- Full Name -->
+              <div class="form-group" th:classappend="${#fields.hasErrors('name')} ? 'has-error'">
+                <label for="name" class="form-label">Full Name <span class="required">*</span></label>
+                <input type="text" id="name" th:field="*{name}"
+                       class="form-input" placeholder="e.g. Arjun Ramesh"/>
+                <span class="field-error" th:if="${#fields.hasErrors('name')}"
+                      th:errors="*{name}">Name error</span>
+              </div>
+
+              <!-- Student ID -->
+              <div class="form-group" th:classappend="${#fields.hasErrors('studentId')} ? 'has-error'">
+                <label for="studentId" class="form-label">Student ID <span class="required">*</span></label>
+                <input type="text" id="studentId" th:field="*{studentId}"
+                       class="form-input" placeholder="e.g. CS2021001"/>
+                <span class="field-error" th:if="${#fields.hasErrors('studentId')}"
+                      th:errors="*{studentId}">ID error</span>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <!-- Email -->
+              <div class="form-group" th:classappend="${#fields.hasErrors('email')} ? 'has-error'">
+                <label for="email" class="form-label">Email Address <span class="required">*</span></label>
+                <input type="email" id="email" th:field="*{email}"
+                       class="form-input" placeholder="you@student.edu"/>
+                <span class="field-error" th:if="${#fields.hasErrors('email')}"
+                      th:errors="*{email}">Email error</span>
+              </div>
+
+              <!-- Phone -->
+              <div class="form-group">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="tel" id="phone" th:field="*{phone}"
+                       class="form-input" placeholder="e.g. 9876543210"/>
+              </div>
+            </div>
+
+            <!-- Department -->
+            <div class="form-group" th:classappend="${#fields.hasErrors('department')} ? 'has-error'">
+              <label for="department" class="form-label">Department <span class="required">*</span></label>
+              <select id="department" th:field="*{department}" class="form-input form-select">
+                <option value="">-- Select Department --</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Electronics & Communication">Electronics &amp; Communication</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="Science">Science</option>
+                <option value="Management">Management</option>
+                <option value="Psychology">Psychology</option>
+                <option value="Arts & Humanities">Arts &amp; Humanities</option>
+                <option value="Sports">Sports</option>
+              </select>
+              <span class="field-error" th:if="${#fields.hasErrors('department')}"
+                    th:errors="*{department}">Department error</span>
+            </div>
+
+            <!-- Submit -->
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-lg btn-full">
+                🎯 Confirm Registration
+              </button>
+              <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-ghost">Cancel</a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/layout :: footer}"></div>
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

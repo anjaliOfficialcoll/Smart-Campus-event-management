@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login | CampusEvents</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="login-page">
+
+  <div class="login-container">
+    <div class="login-card">
+      <!-- Logo -->
+      <div class="login-logo">
+        <span class="logo-icon">🎓</span>
+        <h1>CampusEvents</h1>
+        <p>Admin Portal</p>
+      </div>
+
+      <!-- Error / Success Messages -->
+      <div th:if="${param.error}" class="alert alert-error">
+        ❌ Invalid username or password. Please try again.
+      </div>
+      <div th:if="${param.logout}" class="alert alert-info">
+        ✅ You have been logged out successfully.
+      </div>
+
+      <!-- Login Form -->
+      <!--
+        Spring Security intercepts POST to /admin/login automatically.
+        Field names must be "username" and "password".
+      -->
+      <form th:action="@{/admin/login}" method="post" class="campus-form">
+
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input type="text"
+                 id="username"
+                 name="username"
+                 class="form-input"
+                 placeholder="admin"
+                 autocomplete="username"
+                 required autofocus/>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="password-wrapper">
+            <input type="password"
+                   id="password"
+                   name="password"
+                   class="form-input"
+                   placeholder="••••••••"
+                   autocomplete="current-password"
+                   required/>
+            <button type="button" class="toggle-password" onclick="togglePassword()">👁</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg">
+          🔐 Sign In
+        </button>
+      </form>
+
+      <div class="login-hint">
+        <small>Default credentials: <strong>admin</strong> / <strong>admin123</strong></small>
+      </div>
+
+      <div class="login-back">
+        <a th:href="@{/}">← Back to Student Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+  </script>
+</body>
+</html>
