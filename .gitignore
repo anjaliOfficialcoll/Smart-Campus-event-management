@@ -57,3 +57,7 @@ Desktop.ini
 
 # ── Maven Wrapper ─────────────────────────────────────────────
 !.mvn/wrapper/maven-wrapper.properties
+
+# ── Environment / Secrets ─────────────────────────────────────
+application.properties
+*.env
